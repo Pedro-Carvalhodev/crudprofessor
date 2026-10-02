@@ -7,15 +7,21 @@ import PaginaInicial from "./pages/PaginaInicial";
 import PaginaListagem from "./pages/PaginaListagem";
 import PaginaCadastro from "./pages/PaginaCadastro";
 import { listarAlunos, criarAluno, excluirAluno } from "./services/alunoService";
+import PaginaListagemProfessores from "./pages/PaginaListagemProfessores";
+import PaginaCadastroProfessores from "./pages/PaginaCadastroProfessores";
+import { listarProfessores, criarProfessor, excluirProfessor } from "./services/professorService";
 
 const mensagemConexao = "Não foi possível conectar à API. Você esqueceu de iniciar o json-server? Rode: npx json-server --watch db.json --port 3000";
 
 function App() {
   const [alunos, setAlunos] = useState([]);
   const [erro, setErro] = useState("");
+  const [professores, setProfessores] = useState([]);
+
 
   useEffect(function () {
     carregarAlunos();
+    carregarProfessores();
   }, []);
 
   async function carregarAlunos() {
@@ -46,6 +52,34 @@ function App() {
     }
   }
 
+  async function carregarProfessores() {
+    try {
+      const dados = await listarProfessores();
+      setProfessores(dados);
+      setErro("");
+    } catch (e) {
+      setErro(mensagemConexao);
+    }
+  }
+
+  async function aoSalvarProfessor(professor) {
+    try {
+      await criarProfessor(professor);
+      carregarProfessores();
+    } catch (e) {
+      setErro(mensagemConexao);
+    }
+  }
+
+  async function aoExcluirProfessor(id) {
+    try {
+      await excluirProfessor(id);
+      carregarProfessores();
+    } catch (e) {
+      setErro(mensagemConexao);
+    }
+  }
+
   return (
     <div className="App">
       <header className="cabecalho-ifrn">
@@ -63,6 +97,8 @@ function App() {
         <Route path="/" element={<PaginaInicial />} />
         <Route path="/alunos" element={<PaginaListagem alunos={alunos} aoExcluir={aoExcluir} />} />
         <Route path="/cadastro" element={<PaginaCadastro aoSalvar={aoSalvar} />} />
+        <Route path="/professores" element={<PaginaListagemProfessores professores={professores} aoExcluir={aoExcluirProfessor} />} />
+        <Route path="/cadastro-professores" element={<PaginaCadastroProfessores aoSalvar={aoSalvarProfessor} />} />
       </Routes>
     </div>
   );
